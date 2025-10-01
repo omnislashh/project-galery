@@ -1,11 +1,9 @@
-// src/context/ProjectsContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import type { Project } from '../types';
 import { db } from '../firebase';
 import {
   collection,
   addDoc,
-  getDocs,
   updateDoc,
   doc,
   serverTimestamp,
@@ -14,7 +12,7 @@ import {
 
 type ContextValue = {
   projects: Project[];
-  addProject: (p: Omit<Project, 'id'|'votes'|'createdAt'>) => Promise<void>;
+  addProject: (p: Omit<Project, 'id' | 'votes' | 'createdAt'>) => Promise<void>;
   vote: (id: string, votes: number) => Promise<void>;
 };
 
@@ -30,24 +28,54 @@ export const ProjectsProvider: React.FC<{children: React.ReactNode}> = ({ childr
         id: doc.id,
         ...(doc.data() as Omit<Project, "id">)
       }));
-      setProjects(data.sort((a, b) => b.votes - a.votes)); // sort by votes
+      setProjects(data.sort((a, b) => b.votes - a.votes));
+    }, (err) => {
+      console.error("Erreur onSnapshot:", err);
     });
+
     return unsubscribe;
   }, []);
 
-  // Add project to Firestore
+  // Add project
   const addProject = async (p: Omit<Project, 'id'|'votes'|'createdAt'>) => {
-    await addDoc(collection(db, "projects"), {
-      ...p,
-      votes: 0,
-      createdAt: serverTimestamp()
-    });
+    try {
+      const projectData: any = {
+        ...p,
+        votes: 0,
+        createdAt: serverTimestamp(),
+      };
+
+      // Supprime les champs undefined pour éviter invalid-argument
+      Object.keys(projectData).forEach(key => {
+        if (projectData[key] === undefined) delete projectData[key];
+      });
+
+      await addDoc(collection(db, "projects"), projectData);
+    } catch (err) {
+      console.error("Erreur Firebase addProject:", err);
+      throw err;
+    }
   };
 
-  // Vote for a project
+  // Vote for a project (limité à une fois par utilisateur avec localStorage)
   const vote = async (id: string, votes: number) => {
-    const ref = doc(db, "projects", id);
-    await updateDoc(ref, { votes: votes + 1 });
+    try {
+      const votedProjects: string[] = JSON.parse(localStorage.getItem("votedProjects") || "[]");
+
+      if (votedProjects.includes(id)) {
+        alert("You already voted for this project!");
+        return;
+      }
+
+      const ref = doc(db, "projects", id);
+      await updateDoc(ref, { votes: votes + 1 });
+
+      // Enregistre le vote dans localStorage
+      votedProjects.push(id);
+      localStorage.setItem("votedProjects", JSON.stringify(votedProjects));
+    } catch (err) {
+      console.error("Erreur vote:", err);
+    }
   };
 
   return (
