@@ -46,20 +46,33 @@ function App() {
   };
 
   return (
-    <div style={{ padding: 20 }}>
-      <h1>🚀 Firebase Test</h1>
-      <button onClick={addTestProject} style={{ marginBottom: 20 }}>
-        Add Test Project
-      </button>
-      <ul>
-        {projects.map(p => (
-          <li key={p.id}>
-            <strong>{p.title}</strong> — {p.description}
-          </li>
-        ))}
-      </ul>
+    // <div style={{ padding: 20 }}>
+    //   <h1>🚀 Firebase Test</h1>
+    //   <button onClick={addTestProject} style={{ marginBottom: 20 }}>
+    //     Add Test Project
+    //   </button>
+    //   <ul>
+    //     {projects.map(p => (
+    //       <li key={p.id}>
+    //         <strong>{p.title}</strong> — {p.description}
+    //       </li>
+    //     ))}
+    //   </ul>
+    // </div>
+    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+       <h1 className="text-4xl font-bold text-blue-500">
+         🚀 Tailwind fonctionne !
+       </h1>
     </div>
   );
+  // return (
+  //   <div className="bg-gray-100 min-h-screen flex items-center justify-center">
+  //     <h1 className="text-4xl font-bold text-blue-500">
+  //       🚀 Tailwind fonctionne !
+  //     </h1>
+  //   </div>
+  // );
 }
+
 
 export default App;
